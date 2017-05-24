@@ -2,16 +2,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/results_list"
-        android:icon="@drawable/ic_list"
-        android:title="@string/ic_list"
-        app:showAsAction="always"/>
-
-    <item
-        android:id="@+id/results_clear"
-        android:icon="@drawable/ic_clear"
-        android:title="@string/ic_clear"
-        app:showAsAction="always"/>
-
 </menu>

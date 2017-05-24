@@ -11,14 +11,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.ProgressCallback;
+import com.koushikdutta.ion.Response;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.search_button)
     public void onSearchButtonClick(){
+        textView.setText("");
         getSourceCode(getUrl());
     }
 
@@ -64,12 +64,11 @@ public class MainActivity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-
     private void getSourceCode(String url){
 
         if(isUrlValid(url)){
             if(isNetworkAvailable()){
-                uploauSC(url);
+                uploadSourceCode(url);
             } else{
                 textView.setText("No internet connection.");
             }
@@ -78,34 +77,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void uploauSC(String url) {
+    private void uploadSourceCode(String url) {
+
         progressBar.setVisibility(View.VISIBLE);
+
         Ion.with(this)
                 .load(url)
                 .asString()
-                .setCallback(new FutureCallback<String>() {
+                .withResponse()
+                .setCallback(new FutureCallback<Response<String>>() {
                     @Override
-                    public void onCompleted(Exception e, String result) {
+                    public void onCompleted(Exception e, Response<String> response) {
+
                         progressBar.setVisibility(View.GONE);
-                        textView.setText(result);
+
+                        if(response != null){
+                            if(200 == response.getHeaders().code()){
+                                textView.setText(response.getResult());
+                            }else{
+                                textView.setText(response.getHeaders().message());
+                            }
+                        }else{
+                            textView.setText(R.string.error);
+                        }
+
                     }
                 });
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            super.onBackPressed();
-        }else if(item.getItemId() == R.id.results_list){
-            Toast.makeText(this, "pokaż wyniki", Toast.LENGTH_LONG).show();
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 }

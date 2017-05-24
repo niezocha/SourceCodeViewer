@@ -46,6 +46,7 @@
     </ScrollView>
     <ProgressBar
         android:id="@+id/progress_bar"
+        android:indeterminate="true"
         android:visibility="gone"
         android:layout_gravity="center"
         android:layout_width="match_parent"
