@@ -6,14 +6,11 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
@@ -50,7 +47,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getUrl(){
-        return editText.getText().toString();
+        String url = editText.getText().toString();
+        if(url.startsWith("http://") || url.startsWith("https://") ){
+            return url;
+        }else{
+            return "http://"+url;
+        }
     }
 
     private boolean isUrlValid(String url){
@@ -58,8 +60,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
@@ -88,9 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCallback(new FutureCallback<Response<String>>() {
                     @Override
                     public void onCompleted(Exception e, Response<String> response) {
-
                         progressBar.setVisibility(View.GONE);
-
                         if(response != null){
                             if(200 == response.getHeaders().code()){
                                 textView.setText(response.getResult());
@@ -100,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                         }else{
                             textView.setText(R.string.error);
                         }
-
                     }
                 });
     }
