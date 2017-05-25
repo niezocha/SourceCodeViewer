@@ -6,11 +6,11 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import com.koushikdutta.ion.Ion;
 
@@ -18,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -34,12 +33,14 @@ public class MainActivity extends AppCompatActivity {
     TextInputEditText editText;
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
-    @BindString(R.string.not_url)
-    String notUrl;
-    @BindString(R.string.error)
-    String error;
-    @BindString(R.string.no_internet)
-    String noInternet;
+    @BindView(R.id.view_flipper)
+    ViewFlipper flipper;
+    @BindView(R.id.no_internet)
+    TextView noInternet;
+    @BindView(R.id.error)
+    TextView error;
+    @BindView(R.id.no_url)
+    TextView noUrl;
 
     private WebsiteDataSource dataSource;
 
@@ -52,72 +53,69 @@ public class MainActivity extends AppCompatActivity {
         dataSource = new WebsiteDataSource(this);
         dataSource.open();
         dataSource.clear();
+        flipper.setDisplayedChild(flipper.indexOfChild(textView));
+    }
+
+    @OnClick(R.id.edit_text)
+    public void onEditTextClick() {
+        clearTV();
     }
 
     @OnClick(R.id.search_button)
     public void onSearchButtonClick() {
-        setTextToTextView("");
         getSourceCode(getUrl());
     }
 
+    private void clearTV() {
+        setTextToTextView("");
+    }
+
     private void uploadSourceCode(String url) {
-        progressBar.setVisibility(View.VISIBLE);
+        flipper.setDisplayedChild(R.id.progress_bar);
         Ion.with(this)
                 .load(url)
                 .asString()
                 .withResponse()
                 .setCallback((e, response) -> {
-                    progressBar.setVisibility(View.GONE);
                     if (response != null) {
                         if (200 == response.getHeaders().code()) {
                             String result = response.getResult();
                             setTextToTextView(result);
+                            flipper.setDisplayedChild(flipper.indexOfChild(textView));
                             dataSource.saveSourceCode(url, result);
                         } else {
-                            setTextToTextView(response.getHeaders().message());
+                            flipper.setDisplayedChild(flipper.indexOfChild(error));
                         }
                     } else {
-                        setTextToTextView(error);
+                        flipper.setDisplayedChild(flipper.indexOfChild(error));
                     }
                 });
     }
 
-    private String getCodeFromDB(String url) {
+    private String uploadFromDB(String url) {
+        flipper.setDisplayedChild(flipper.indexOfChild(progressBar));
+        String result = dataSource.getSourceCode(url);
+        setTextToTextView(result);
         return dataSource.getSourceCode(url);
     }
 
-    private void uploadFromDB(String url) {
-        String result = dataSource.getSourceCode(url);
-        setTextToTextView(result);
-    }
-
     private void getSourceCode(String url) {
-
-        if (isUrlValid(url)) {
+        flipper.setDisplayedChild(flipper.indexOfChild(progressBar));
+        if (isValidAddress(url)) {
             if (isNetworkAvailable()) {
                 uploadSourceCode(url);
-            } else if (!getCodeFromDB(url).equals("")) {
-                uploadFromDB(url);
-                setTextToTextView(getCodeFromDB(url));
+            } else if (!uploadFromDB(url).equals("")) {
+                flipper.setDisplayedChild(flipper.indexOfChild(textView));
             } else {
-                setTextToTextView(noInternet);
+                flipper.setDisplayedChild(flipper.indexOfChild(noInternet));
             }
         } else {
-            setTextToTextView(notUrl);
+            flipper.setDisplayedChild(flipper.indexOfChild(noUrl));
         }
     }
 
     private void setTextToTextView(String string) {
         textView.setText(string);
-    }
-
-    private String getUrl() {
-        String url = editText.getText().toString();
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            return url;
-        } else {
-            return "http://" + url;
-        }
     }
 
     private boolean isNetworkAvailable() {
@@ -126,13 +124,30 @@ public class MainActivity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    private boolean checkDomain(String url) {
+    private String getUrl() {
+        String url = editText.getText().toString();
+        String result = url.replaceAll("\\s+", "");
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return result;
+        } else {
+            return "http://" + result;
+        }
+    }
+
+    private boolean isValidAddress(String url) {
+        return (isValidUrl(url) && isValidDomain(url));
+    }
+
+    private boolean isValidUrl(String url) {
+        return URLUtil.isValidUrl(url);
+    }
+
+    private boolean isValidDomain(String url) {
         try {
             InputStream fis = getResources().openRawResource(R.raw.domains);
             if (fis != null) {
                 InputStreamReader chapterReader = new InputStreamReader(fis);
                 BufferedReader buffreader = new BufferedReader(chapterReader);
-
                 String line;
                 do {
                     line = buffreader.readLine();
@@ -145,10 +160,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return false;
-    }
-
-    private boolean isUrlValid(String url) {
-        return (URLUtil.isValidUrl(url) && checkDomain(url));
     }
 
     @Override

@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.concurrent.Callable;
+
 public class WebsiteDataSource {
 
     private SQLiteDatabase database;
@@ -35,16 +37,17 @@ public class WebsiteDataSource {
     }
 
     public String getSourceCode(String url) {
+
         Cursor cursor = database.query(MySQLiteHelper.TABLE, null,
                 MySQLiteHelper.COLUMN_ADDRESS + " = ?", new String[]{url}, null, null, null, null);
+
         if (cursor.moveToFirst()) {
             cursor.moveToLast();
             Website website = new Website();
             website.setId(cursor.getInt(cursor.getColumnIndex(MySQLiteHelper.COLUMN_ID)));
             website.setAddress(cursor.getString(cursor.getColumnIndex(MySQLiteHelper.COLUMN_ADDRESS)));
             website.setSourcecode(cursor.getString(cursor.getColumnIndex(MySQLiteHelper.COLUMN_SOURCE_CODE)));
-            String sourceCode = website.getSourcecode();
-            return sourceCode;
+            return website.getSourcecode();
         }
         return "";
     }
