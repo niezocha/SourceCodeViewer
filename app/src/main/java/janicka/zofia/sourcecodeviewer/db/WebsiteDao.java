@@ -6,14 +6,12 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.util.concurrent.Callable;
-
-public class WebsiteDataSource {
+public class WebsiteDao {
 
     private SQLiteDatabase database;
     private MySQLiteHelper dbHelper;
 
-    public WebsiteDataSource(Context context) {
+    public WebsiteDao(Context context) {
         dbHelper = new MySQLiteHelper(context);
     }
 
@@ -38,8 +36,7 @@ public class WebsiteDataSource {
 
     public String getSourceCode(String url) {
 
-        Cursor cursor = database.query(MySQLiteHelper.TABLE, null,
-                MySQLiteHelper.COLUMN_ADDRESS + " = ?", new String[]{url}, null, null, null, null);
+        Cursor cursor = database.query(MySQLiteHelper.TABLE, null, MySQLiteHelper.COLUMN_ADDRESS + " = ?", new String[]{url}, null, null, null, null);
 
         if (cursor.moveToFirst()) {
             cursor.moveToLast();

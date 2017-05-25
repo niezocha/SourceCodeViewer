@@ -14,14 +14,10 @@ import android.widget.ViewFlipper;
 
 import com.koushikdutta.ion.Ion;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import janicka.zofia.sourcecodeviewer.db.WebsiteDataSource;
+import janicka.zofia.sourcecodeviewer.db.WebsiteDao;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.no_url)
     TextView noUrl;
 
-    private WebsiteDataSource dataSource;
+    private WebsiteDao dataSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +46,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        dataSource = new WebsiteDataSource(this);
+        dataSource = new WebsiteDao(this);
         dataSource.open();
         dataSource.clear();
         flipper.setDisplayedChild(flipper.indexOfChild(textView));
-    }
-
-    @OnClick(R.id.edit_text)
-    public void onEditTextClick() {
-        clearTV();
     }
 
     @OnClick(R.id.search_button)
@@ -66,16 +57,10 @@ public class MainActivity extends AppCompatActivity {
         getSourceCode(getUrl());
     }
 
-    private void clearTV() {
-        setTextToTextView("");
-    }
-
     private void uploadSourceCode(String url) {
         flipper.setDisplayedChild(R.id.progress_bar);
         Ion.with(this)
-                .load(url)
-                .asString()
-                .withResponse()
+                .load(url).asString().withResponse()
                 .setCallback((e, response) -> {
                     if (response != null) {
                         if (200 == response.getHeaders().code()) {
@@ -126,40 +111,11 @@ public class MainActivity extends AppCompatActivity {
 
     private String getUrl() {
         String url = editText.getText().toString();
-        String result = url.replaceAll("\\s+", "");
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            return result;
-        } else {
-            return "http://" + result;
-        }
+        return UrlChecker.checkUrl(url);
     }
 
     private boolean isValidAddress(String url) {
-        return (isValidUrl(url) && isValidDomain(url));
-    }
-
-    private boolean isValidUrl(String url) {
-        return URLUtil.isValidUrl(url);
-    }
-
-    private boolean isValidDomain(String url) {
-        try {
-            InputStream fis = getResources().openRawResource(R.raw.domains);
-            if (fis != null) {
-                InputStreamReader chapterReader = new InputStreamReader(fis);
-                BufferedReader buffreader = new BufferedReader(chapterReader);
-                String line;
-                do {
-                    line = buffreader.readLine();
-                    if (url.contains(line)) {
-                        return true;
-                    }
-                } while (line != null);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return URLUtil.isValidUrl(url) && UrlChecker.checkDomain(this, url);
     }
 
     @Override
@@ -167,4 +123,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         dataSource.close();
     }
+
 }
+
