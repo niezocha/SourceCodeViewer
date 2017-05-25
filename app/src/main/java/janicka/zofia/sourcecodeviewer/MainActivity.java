@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
                             flipper.setDisplayedChild(flipper.indexOfChild(textView));
                             dataSource.saveSourceCode(url, result);
                         } else {
-                            flipper.setDisplayedChild(flipper.indexOfChild(error));
+                            setTextToTextView(response.getHeaders().message());
+                            flipper.setDisplayedChild(flipper.indexOfChild(textView));
                         }
                     } else {
                         flipper.setDisplayedChild(flipper.indexOfChild(error));
