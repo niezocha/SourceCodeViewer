@@ -7,4 +7,5 @@
     <string name="not_url">Błędny adres strony!</string>
     <string name="ohno">Oh nie! Nie ma połączenia z internetem!</string>
     <string name="error">ups... coś poszło nie tak! \nTa strona prawdopodobnie nie istnieje.</string>
+    <string name="button">pobierz</string>
 </resources>

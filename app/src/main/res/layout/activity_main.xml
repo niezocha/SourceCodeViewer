@@ -22,14 +22,14 @@
             android:hint="@string/info" />
     </android.support.design.widget.TextInputLayout>
 
-    <ImageButton
+    <Button
         android:id="@+id/search_button"
+        android:text="@string/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/text_input_layout"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        app:srcCompat="@drawable/ic_search" />
+        android:layout_alignParentRight="true"/>
 
     <ScrollView
         android:layout_width="match_parent"
