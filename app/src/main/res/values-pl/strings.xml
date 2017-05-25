@@ -8,4 +8,5 @@
     <string name="ohno">Oh nie! Nie ma połączenia z internetem!</string>
     <string name="error">ups... coś poszło nie tak! \nTa strona prawdopodobnie nie istnieje.</string>
     <string name="button">pobierz</string>
+    <string name="no_internet">Brak połączenia z internetem.</string>
 </resources>
