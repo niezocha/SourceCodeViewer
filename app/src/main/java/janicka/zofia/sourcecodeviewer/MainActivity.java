@@ -14,12 +14,19 @@ import android.widget.ViewFlipper;
 
 import com.koushikdutta.ion.Ion;
 
+import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import janicka.zofia.sourcecodeviewer.db.WebsiteDao;
 
 public class MainActivity extends AppCompatActivity {
+
+    static final String EDIT_TEXT = "edit_text";
+    private String saved_edit_text;
+    static final String TEXT_VIEW = "text_view";
+    private String saved_text_view;
+
 
     @BindView(R.id.search_button)
     Button searchButton;
@@ -31,12 +38,18 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     @BindView(R.id.view_flipper)
     ViewFlipper flipper;
-    @BindView(R.id.no_internet)
-    TextView noInternet;
-    @BindView(R.id.error)
-    TextView error;
-    @BindView(R.id.no_url)
-    TextView noUrl;
+//    @BindView(R.id.no_internet)
+//    TextView noInternet;
+//    @BindView(R.id.error)
+//    TextView error;
+//    @BindView(R.id.no_url)
+//    TextView noUrl;
+    @BindString(R.string.no_internet)
+    String noInternet;
+    @BindString(R.string.not_url)
+    String noUrl;
+    @BindString(R.string.error)
+    String error;
 
     private WebsiteDao dataSource;
 
@@ -48,8 +61,26 @@ public class MainActivity extends AppCompatActivity {
 
         dataSource = new WebsiteDao(this);
         dataSource.open();
-        dataSource.clear();
+//        dataSource.clear();
         flipper.setDisplayedChild(flipper.indexOfChild(textView));
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        saved_edit_text = editText.getText().toString();
+        saved_text_view = textView.getText().toString();
+        savedInstanceState.putString(EDIT_TEXT, saved_edit_text);
+        savedInstanceState.putString(TEXT_VIEW, saved_text_view);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        editText.setText(savedInstanceState.getString(EDIT_TEXT));
+        textView.setText(savedInstanceState.getString(TEXT_VIEW));
     }
 
     @OnClick(R.id.search_button)
@@ -73,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
                             flipper.setDisplayedChild(flipper.indexOfChild(textView));
                         }
                     } else {
-                        flipper.setDisplayedChild(flipper.indexOfChild(error));
+                        setTextToTextView(error);
+                        flipper.setDisplayedChild(flipper.indexOfChild(textView));
                     }
                 });
     }
@@ -93,10 +125,12 @@ public class MainActivity extends AppCompatActivity {
             } else if (!uploadFromDB(url).equals("")) {
                 flipper.setDisplayedChild(flipper.indexOfChild(textView));
             } else {
-                flipper.setDisplayedChild(flipper.indexOfChild(noInternet));
+                setTextToTextView(noInternet);
+                flipper.setDisplayedChild(flipper.indexOfChild(textView));
             }
         } else {
-            flipper.setDisplayedChild(flipper.indexOfChild(noUrl));
+            setTextToTextView(noUrl);
+            flipper.setDisplayedChild(flipper.indexOfChild(textView));
         }
     }
 
