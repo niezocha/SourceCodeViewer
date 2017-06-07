@@ -18,32 +18,24 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import icepick.Icepick;
+import icepick.State;
 import janicka.zofia.sourcecodeviewer.db.WebsiteDao;
 
 public class MainActivity extends AppCompatActivity {
 
-    static final String EDIT_TEXT = "edit_text";
-    private String saved_edit_text;
-    static final String TEXT_VIEW = "text_view";
-    private String saved_text_view;
-
-
-    @BindView(R.id.search_button)
-    Button searchButton;
-    @BindView(R.id.text_view)
-    TextView textView;
     @BindView(R.id.edit_text)
     TextInputEditText editText;
+    @State String editString = "";
+    @BindView(R.id.text_view)
+    TextView textView;
+    @State String textString = "";
+    @BindView(R.id.search_button)
+    Button searchButton;
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
     @BindView(R.id.view_flipper)
     ViewFlipper flipper;
-//    @BindView(R.id.no_internet)
-//    TextView noInternet;
-//    @BindView(R.id.error)
-//    TextView error;
-//    @BindView(R.id.no_url)
-//    TextView noUrl;
     @BindString(R.string.no_internet)
     String noInternet;
     @BindString(R.string.not_url)
@@ -56,31 +48,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Icepick.restoreInstanceState(this, savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        editText.setText(editString);
+        textView.setText(textString);
+
         dataSource = new WebsiteDao(this);
         dataSource.open();
-//        dataSource.clear();
         flipper.setDisplayedChild(flipper.indexOfChild(textView));
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-
-        saved_edit_text = editText.getText().toString();
-        saved_text_view = textView.getText().toString();
-        savedInstanceState.putString(EDIT_TEXT, saved_edit_text);
-        savedInstanceState.putString(TEXT_VIEW, saved_text_view);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        editText.setText(savedInstanceState.getString(EDIT_TEXT));
-        textView.setText(savedInstanceState.getString(TEXT_VIEW));
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Icepick.saveInstanceState(this, outState);
     }
 
     @OnClick(R.id.search_button)
@@ -108,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                         flipper.setDisplayedChild(flipper.indexOfChild(textView));
                     }
                 });
+        editString = editText.getText().toString();
     }
 
     private String uploadFromDB(String url) {
@@ -136,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setTextToTextView(String string) {
         textView.setText(string);
+        textString = string;
     }
 
     private boolean isNetworkAvailable() {
